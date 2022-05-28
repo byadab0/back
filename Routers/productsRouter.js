@@ -61,6 +61,8 @@ router.post('/addProduct', async function (req, res) {
         }
     }
 
+    headerValue[productSheet[0].indexOf("Product Code")] = timeStamp();
+
     await sheetUpdate(spreadsheetId, "Product Sheet!A1", header);
     await sheetUpdate(spreadsheetId, "Product Sheet!A2", headerStructure);
 
@@ -70,7 +72,6 @@ router.post('/addProduct', async function (req, res) {
     for (let i = 0; i < PriceData.length; i++) {
         let temp = headerValue;
         temp[0] = dateAndTime().replace(" GMT", "")
-        temp[1] = timeStamp();
         temp[productSheet[0].indexOf("Size")] = PriceData[i][0]
         if (PriceData[i][1]) temp[productSheet[0].indexOf("Height")] = PriceData[i][1]
         if (PriceData[i][2]) temp[productSheet[0].indexOf("GSM")] = PriceData[i][2]
