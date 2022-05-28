@@ -1,0 +1,27 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {    
+    "body-parser": "^1.19.1",
+    "cors": "^2.8.5",
+    "dotenv": "^9.0.2",    
+    "express": "^4.17.1",
+    "express-async-handler": "^1.1.4",
+    "googleapis": "^73.0.0",
+    "http": "^0.0.1-security",
+    "jsonwebtoken": "^8.5.1",
+    "web-push": "^3.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  },
+  "scripts": {    
+    "start": "node express.js",
+    "server": "nodemon express"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "description": ""
+}
