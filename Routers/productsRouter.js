@@ -86,6 +86,12 @@ router.post('/addProduct', async function (req, res) {
         if (PriceData[i][2]) temp[productSheet[0].indexOf("GSM")] = PriceData[i][2]
         temp[productSheet[0].indexOf("Price")] = PriceData[i][3];
         temp[productSheet[0].indexOf("What is in the box ?")] = PriceData[i][4];
+        temp[productSheet[0].indexOf("SKU Code")] = PriceData[i][5];
+        temp[productSheet[0].indexOf("Packed Product Weight")] = PriceData[i][6];
+        temp[productSheet[0].indexOf("Packed Product Length")] = PriceData[i][7];
+        temp[productSheet[0].indexOf("Packed Product Width")] = PriceData[i][8];
+        temp[productSheet[0].indexOf("Packed Product Height")] = PriceData[i][9];
+
 
         let price = parseInt(temp[productSheet[0].indexOf("Price")]),
             taxPrice = parseFloat(temp[productSheet[0].indexOf("Tax %")]) * parseInt(temp[productSheet[0].indexOf("Price")]) / 100,
