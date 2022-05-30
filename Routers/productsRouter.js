@@ -5,6 +5,16 @@ const { dateAndTime, timeStamp } = require("../CommonFunctions.js")
 
 const spreadsheetId = '113MbGAb1k8wGeSWw_jF5Bam9MOMhslYIQabOJLetIKo';
 
+
+router.get('/search', async function (req, res) {
+
+    let searchValue = req.query.search;
+    console.log(searchValue)
+    console.log(req.sheet)
+    res.send({ products: req.sheet })
+})
+
+
 router.post('/addProduct', async function (req, res) {
 
     let reqData = req.body.headers;
@@ -20,7 +30,6 @@ router.post('/addProduct', async function (req, res) {
         if (oldIndex !== -1 || newIndex !== -1) {
             index = newIndex !== -1 ? newIndex : oldIndex;
 
-            console.log(reqData[i].image)
             if (reqData[i].headerType === "Image") {
                 for (let j = 0; j < reqData[i].image.length; j++) {
                     if (reqData[i].image[j].imgLink) {
@@ -103,25 +112,8 @@ router.get('/dropdowns', async function (req, res) {
 
         }
     }
-    let dropdowns = {
-        category: [],
-        sub_category: [],
-        further_category: [],
-        country: [],
-        size: [],
-        gsm: [],
-        colour: [],
-        height: []
-    };
-    for (let i = 1; i < data.length; i++) {
-        data[i][0] && dropdowns.category.push(data[i][2])
-        data[i][1] && dropdowns.sub_category.push(data[i][3])
-        data[i][2] && !dropdowns.further_category.includes(data[i][2]) && dropdowns.further_category.push(data[i][4])
-        data[i][3] && dropdowns.country.push(data[i][0])
-        data[i][6] && dropdowns.colour.push(data[i][1])
-    }
 
-    res.send({ dropdowns, tempHeaders: tempHeaders_2, dropdownsHeaders: data[0], data: data })
+    res.send({ tempHeaders: tempHeaders_2, dropdownsHeaders: data[0], data: data })
 });
 
 module.exports = router;

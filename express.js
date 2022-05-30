@@ -1,17 +1,32 @@
 "use strict";
 const express = require("express");
 const productsRouter = require("./Routers/productsRouter.js");
+const { getSheetData } = require("./sheet.js");
 
-const spreadsheetId = '1eFAm4MLB6sqZ98Vu3ZZ0F1yKlD4i3fD3E11C0UyaVaE';
+const spreadsheetId = '113MbGAb1k8wGeSWw_jF5Bam9MOMhslYIQabOJLetIKo';
 
 const app = express();
+let sheet = {};
+
+async function getSheet() {
+    sheet = await getSheetData();
+}
+getSheet();
+
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+app.use(async function getData(req, res, next) {
+    req.sheet = sheet;
+    next();
+})
+
 app.get("/", (req, res) => {
     res.send({ message: "ok" })
 })
+
+
 
 app.use("/api/products", productsRouter)
 
