@@ -9,8 +9,8 @@ const spreadsheetId = '113MbGAb1k8wGeSWw_jF5Bam9MOMhslYIQabOJLetIKo';
 router.get('/search', async function (req, res) {
 
     let searchValue = req.query.search;
-    console.log(searchValue)
-    console.log(req.sheet)
+    //console.log(searchValue)
+    //console.log(req.sheet)
     res.send({ products: req.sheet })
 })
 
@@ -30,17 +30,17 @@ router.post('/addProduct', async function (req, res) {
         if (oldIndex !== -1 || newIndex !== -1) {
             index = newIndex !== -1 ? newIndex : oldIndex;
 
-            if (reqData[i].headerType === "Image") {
-                for (let j = 0; j < reqData[i].image.length; j++) {
-                    if (reqData[i].image[j].imgLink) {
-                        let link = await UploadFile(reqData[i].image[j].imgLink, reqData[i].image[j].name)
-                        if (link.success) {
-                            reqData[i].image[j].imgLink = "";
-                            text += reqData[i].image[j].colour_code + "=" + link.success + "\n";
-                        }
-                    }
-                }
-            }
+            // if (reqData[i].headerType === "Image") {
+            //     for (let j = 0; j < reqData[i].image.length; j++) {
+            //         if (reqData[i].image[j].imgLink) {
+            //             let link = await UploadFile(reqData[i].image[j].imgLink, reqData[i].image[j].name)
+            //             if (link.success) {
+            //                 reqData[i].image[j].imgLink = "";
+            //                 text += reqData[i].image[j].colour_code + "=" + link.success + "\n";
+            //             }
+            //         }
+            //     }
+            // }
 
             header[index] = reqData[i].headerName.new;
             headerValue[index] = reqData[i].headerType === "Image" ? text.substring(0, text.length - 1) : reqData[i].headerValue.length > 1 ? JSON.stringify(reqData[i].headerValue) : reqData[i].headerValue[0].value;
@@ -64,33 +64,50 @@ router.post('/addProduct', async function (req, res) {
     }
 
     for (let i = 0; i < header.length; i++) {
-        console.log(header[i])
+        //console.log(header[i])
         if (!header[i]) {
             headerStructure[i] = "";
         }
     }
 
-    headerValue[productSheet[0].indexOf("Product Code")] = timeStamp();
+
+    const findDuplicate = productSheet.find(x =>
+        x[productSheet[0].indexOf("Country")] === headerValue[productSheet[0].indexOf("Country")] &&
+        x[productSheet[0].indexOf("Our Brands")] === headerValue[productSheet[0].indexOf("Our Brands")] &&
+        x[productSheet[0].indexOf("Group Products")] === headerValue[productSheet[0].indexOf("Group Products")] &&
+        x[productSheet[0].indexOf("Category")] === headerValue[productSheet[0].indexOf("Category")] &&
+        x[productSheet[0].indexOf("Sub Category")] === headerValue[productSheet[0].indexOf("Sub Category")] &&
+        x[productSheet[0].indexOf("Product Type")] === headerValue[productSheet[0].indexOf("Product Type")]
+    )
+
+    //console.log(findDuplicate);
+    //console.log(headerValue);
+
+    if (findDuplicate)
+        headerValue[productSheet[0].indexOf("Product Code")] = findDuplicate[productSheet[0].indexOf("Product Code")];
+    else
+        headerValue[productSheet[0].indexOf("Product Code")] = timeStamp();
 
     await sheetUpdate(spreadsheetId, "Product Sheet!A1", header);
     await sheetUpdate(spreadsheetId, "Product Sheet!A2", headerStructure);
 
-    let PriceData = req.body.PriceData;
-    console.log(headerValue)
+    let PriceData = req.body.PriceData, imagesWithSize = req.body.imagesWithSize;
 
-    for (let i = 0; i < PriceData.length; i++) {
+
+    for (let i = 0; i < imagesWithSize.length; i++) {
+        console.log(imagesWithSize[i].height)
         let temp = headerValue;
         temp[0] = dateAndTime().replace(" GMT", "")
-        temp[productSheet[0].indexOf("Size")] = PriceData[i][0]
-        if (PriceData[i][1]) temp[productSheet[0].indexOf("Height")] = PriceData[i][1]
-        if (PriceData[i][2]) temp[productSheet[0].indexOf("GSM")] = PriceData[i][2]
-        temp[productSheet[0].indexOf("Price")] = PriceData[i][3];
-        temp[productSheet[0].indexOf("What is in the box ?")] = PriceData[i][4];
-        temp[productSheet[0].indexOf("SKU Code")] = PriceData[i][5];
-        temp[productSheet[0].indexOf("Packed Product Weight")] = PriceData[i][6];
-        temp[productSheet[0].indexOf("Packed Product Length")] = PriceData[i][7];
-        temp[productSheet[0].indexOf("Packed Product Width")] = PriceData[i][8];
-        temp[productSheet[0].indexOf("Packed Product Height")] = PriceData[i][9];
+        temp[productSheet[0].indexOf("Size")] = imagesWithSize[i].size
+        if (imagesWithSize[i].height) temp[productSheet[0].indexOf("Height")] = imagesWithSize[i].height
+        if (imagesWithSize[i].gsm) temp[productSheet[0].indexOf("GSM")] = imagesWithSize[i].gsm
+        temp[productSheet[0].indexOf("Price")] = imagesWithSize[i].priceInput;
+        temp[productSheet[0].indexOf("What is in the box ?")] = imagesWithSize[i].priceDivTextarea
+        // temp[productSheet[0].indexOf("SKU Code")] = PriceData[i][5];
+        temp[productSheet[0].indexOf("Packed Product Weight")] = imagesWithSize[i].weight;
+        temp[productSheet[0].indexOf("Packed Product Length")] = imagesWithSize[i].length;
+        temp[productSheet[0].indexOf("Packed Product Width")] = imagesWithSize[i].width;
+        temp[productSheet[0].indexOf("Packed Product Height")] = imagesWithSize[i].Packedheight;
 
 
         let price = parseInt(temp[productSheet[0].indexOf("Price")]),
@@ -98,11 +115,64 @@ router.post('/addProduct', async function (req, res) {
             ShippingPrice = parseInt(temp[productSheet[0].indexOf("Shipping Charges")]),
             CustomDuty = parseFloat(temp[productSheet[0].indexOf("Custom Duty %")]) * parseInt(temp[productSheet[0].indexOf("Price")]) / 100;
 
-        console.log(productSheet[0].indexOf("Final Price"))
+        // //console.log(productSheet[0].indexOf("Final Price"))
         temp[productSheet[0].indexOf("Final Price")] = price + taxPrice + ShippingPrice + CustomDuty;
 
-        await sheetAppend(spreadsheetId, `Product Sheet!A${productSheet.length + 1}`, temp);
+
+        let temp_Images = []
+        for (let k = 0; k < imagesWithSize[i].images.length; k++)
+            if (!temp_Images.includes(imagesWithSize[i].images[k].colour_code)) {
+
+                let temp_colour_code = imagesWithSize[i].images[k].colour_code, text = "";
+                temp_Images.push(imagesWithSize[i].images[k].colour_code);
+
+                for (let j = 0; j < imagesWithSize[i].images.length; j++) {
+                    if (imagesWithSize[i].images[j].imgLink && temp_colour_code === imagesWithSize[i].images[j].colour_code) {
+                        temp[productSheet[0].indexOf("SKU Code")] = imagesWithSize[i].images[j].sku_code;
+                        let link = await UploadFile(imagesWithSize[i].images[j].imgLink, imagesWithSize[i].images[j].name)
+                        if (link.success) {
+                            imagesWithSize[i].images[j].imgLink = "";
+                            text += imagesWithSize[i].images[j].colour_code + "=" + link.success + "\n";
+                        }
+                    }
+                }
+
+                temp[productSheet[0].indexOf("Images")] = text.substring(0, text.length - 1)
+                // if (text !== "") {
+                //console.log(imagesWithSize[i].images)
+                await sheetAppend(spreadsheetId, `Product Sheet!A${productSheet.length + 1}`, temp);
+
+                // }
+
+            }
     }
+
+
+    // for (let i = 0; i < PriceData.length; i++) {
+    //     let temp = headerValue;
+    //     temp[0] = dateAndTime().replace(" GMT", "")
+    //     temp[productSheet[0].indexOf("Size")] = PriceData[i][0]
+    //     if (PriceData[i][1]) temp[productSheet[0].indexOf("Height")] = PriceData[i][1]
+    //     if (PriceData[i][2]) temp[productSheet[0].indexOf("GSM")] = PriceData[i][2]
+    //     temp[productSheet[0].indexOf("Price")] = PriceData[i][3];
+    //     temp[productSheet[0].indexOf("What is in the box ?")] = PriceData[i][4];
+    //     temp[productSheet[0].indexOf("SKU Code")] = PriceData[i][5];
+    //     temp[productSheet[0].indexOf("Packed Product Weight")] = PriceData[i][6];
+    //     temp[productSheet[0].indexOf("Packed Product Length")] = PriceData[i][7];
+    //     temp[productSheet[0].indexOf("Packed Product Width")] = PriceData[i][8];
+    //     temp[productSheet[0].indexOf("Packed Product Height")] = PriceData[i][9];
+
+
+    //     let price = parseInt(temp[productSheet[0].indexOf("Price")]),
+    //         taxPrice = parseFloat(temp[productSheet[0].indexOf("Tax %")]) * parseInt(temp[productSheet[0].indexOf("Price")]) / 100,
+    //         ShippingPrice = parseInt(temp[productSheet[0].indexOf("Shipping Charges")]),
+    //         CustomDuty = parseFloat(temp[productSheet[0].indexOf("Custom Duty %")]) * parseInt(temp[productSheet[0].indexOf("Price")]) / 100;
+
+    //     //console.log(productSheet[0].indexOf("Final Price"))
+    //     temp[productSheet[0].indexOf("Final Price")] = price + taxPrice + ShippingPrice + CustomDuty;
+
+    //     // await sheetAppend(spreadsheetId, `Product Sheet!A${productSheet.length + 1}`, temp);
+    // }
 
     res.send({ success: "Product added successfully!!" });
 });
@@ -111,7 +181,7 @@ router.post('/addProduct', async function (req, res) {
 router.get('/dropdowns', async function (req, res) {
     let data = await sheetGet(spreadsheetId, "Dropdown");
     let tempHeaders = await sheetGet(spreadsheetId, "Product Sheet"), tempHeaders_2 = [];
-    console.log(tempHeaders[1])
+    //console.log(tempHeaders[1])
     for (let i = 0; tempHeaders && tempHeaders[1] && i < tempHeaders[1].length; i++) {
         if (tempHeaders[1][i] !== "" && tempHeaders[1][i] !== undefined) {
             tempHeaders_2.push(JSON.parse(tempHeaders[1][i]))
@@ -211,7 +281,7 @@ module.exports = router;
 //     }
 
 //     for (let i = 0; i < header.length; i++) {
-//         console.log(header[i])
+//         //console.log(header[i])
 //         if (!header[i]) {
 //             headerStructure[i] = "";
 //         }
@@ -238,7 +308,7 @@ module.exports = router;
 //         }
 //     }
 
-//     console.log(dropdownData)
+//     //console.log(dropdownData)
 
 //     if (dropdownData.height.length > 0 || dropdownData.gsm.length > 0) {
 
@@ -266,7 +336,7 @@ module.exports = router;
 //         }
 //     }
 
-//     console.log(dropdownData)
+//     //console.log(dropdownData)
 
 
 //     await sheetUpdate(spreadsheetId, "Product Sheet!A1", header);
@@ -297,7 +367,7 @@ module.exports = router;
 //             await sheetUpdateManyRows(spreadsheetId, "Dropdown!A1", data);
 //         } else {
 //             let length = data.length > reqData.dropdownValue.length ? data.length : reqData.dropdownValue.length;
-//             console.log(length)
+//             //console.log(length)
 //             for (let i = 0; i < length; i++) {
 
 //                 if (i === 0)
@@ -307,12 +377,12 @@ module.exports = router;
 //                 else {
 //                     let temp = [""];
 //                     temp[data[0].length - 1] = reqData.dropdownValue[i];
-//                     console.log(temp)
+//                     //console.log(temp)
 //                     data.push(temp)
 //                 }
 //             }
 
-//             console.log(data)
+//             //console.log(data)
 //             await sheetUpdateManyRows(spreadsheetId, "Dropdown!A1", data);
 //         }
 

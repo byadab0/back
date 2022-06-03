@@ -150,7 +150,7 @@ async function getSheetData() {
 
     for (let i = 2; i < productSheet.length - 1; i++) {
 
-        if (productSheet[i][header.indexOf("Product Code")] === productSheet[i + 1][header.indexOf("Product Code")] && !tempProductCodes.includes(productSheet[i][header.indexOf("Product Code")])) {
+        if (!tempProductCodes.includes(productSheet[i][header.indexOf("Product Code")])) {
             let tempProduct = {
                 Product_Code: productSheet[i][header.indexOf("Product Code")],
                 Country: productSheet[i][header.indexOf("Country")],
@@ -186,7 +186,7 @@ async function getSheetData() {
                 if (tempImages[j]) {
                     let temp = tempImages[j].replace(/ /gi, "").split("=http")
                     Images.push({
-                        color: temp[0],
+                        colour: temp[0],
                         link: "http" + temp[1]
                     })
                 }
@@ -199,24 +199,24 @@ async function getSheetData() {
             for (let j = 2; j < productSheet.length; j++) {
                 if (productSheet[i][header.indexOf("Product Code")] === productSheet[j][header.indexOf("Product Code")]) {
 
-                    Size.push(parseInt(productSheet[j][header.indexOf("Size")]))
-                    Height.push(parseInt(productSheet[j][header.indexOf("Height")]))
-                    GSM.push(parseInt(productSheet[j][header.indexOf("GSM")]))
-                    Price.push(parseInt(productSheet[j][header.indexOf("Price")]))
-                    Final_Price.push(parseInt(productSheet[j][header.indexOf("Final Price")]))
-                    Stock.push(parseInt(productSheet[j][header.indexOf("Stock")]))
-                    Pre_Order_Stock.push(parseInt(productSheet[j][header.indexOf("Pre Order Stock")]))
-                    Visibility.push(productSheet[j][header.indexOf("Visibility")])
+                    Size.push(parseInt(productSheet[j][header.indexOf("Size")] ? productSheet[j][header.indexOf("Size")] : 0))
+                    Height.push(parseInt(productSheet[j][header.indexOf("Height")] ? productSheet[j][header.indexOf("Height")] : 0))
+                    GSM.push(parseInt(productSheet[j][header.indexOf("GSM")] ? productSheet[j][header.indexOf("GSM")] : 0))
+                    Price.push(parseInt(productSheet[j][header.indexOf("Price")] ? productSheet[j][header.indexOf("Price")] : 0))
+                    Final_Price.push(parseInt(productSheet[j][header.indexOf("Final Price")] ? productSheet[j][header.indexOf("Final Price")] : 0))
+                    Stock.push(parseInt(productSheet[j][header.indexOf("Stock")] ? productSheet[j][header.indexOf("Stock")] : 0))
+                    Pre_Order_Stock.push(parseInt(productSheet[j][header.indexOf("Pre Order Stock")] ? productSheet[j][header.indexOf("Pre Order Stock")] : 0))
+                    Visibility.push(productSheet[j][header.indexOf("Visibility")] ? productSheet[j][header.indexOf("Visibility")] : 0)
 
                     variations.push({
-                        Size: parseInt( productSheet[j][header.indexOf("Size")]),
-                        Height: parseInt( productSheet[j][header.indexOf("Height")]),
-                        GSM: parseInt( productSheet[j][header.indexOf("GSM")]),
-                        Price: parseInt( productSheet[j][header.indexOf("Price")]),
-                        Final_Price: parseInt( productSheet[j][header.indexOf("Final Price")]),
-                        Stock: parseInt( productSheet[j][header.indexOf("Stock")]),
-                        Pre_Order_Stock: parseInt( productSheet[j][header.indexOf("Pre Order Stock")]),
-                        Visibility: productSheet[j][header.indexOf("Visibility")],
+                        Size: parseInt(productSheet[j][header.indexOf("Size")] ? productSheet[j][header.indexOf("Size")] : 0),
+                        Height: parseInt(productSheet[j][header.indexOf("Height")] ? productSheet[j][header.indexOf("Height")] : 0),
+                        GSM: parseInt(productSheet[j][header.indexOf("GSM")] ? productSheet[j][header.indexOf("GSM")] : 0),
+                        Price: parseInt(productSheet[j][header.indexOf("Price")] ? productSheet[j][header.indexOf("Price")] : 0),
+                        Final_Price: parseInt(productSheet[j][header.indexOf("Final Price")] ? productSheet[j][header.indexOf("Final Price")] : 0),
+                        Stock: parseInt(productSheet[j][header.indexOf("Stock")] ? productSheet[j][header.indexOf("Stock")] : 0),
+                        Pre_Order_Stock: parseInt(productSheet[j][header.indexOf("Pre Order Stock")] ? productSheet[j][header.indexOf("Pre Order Stock")] : 0),
+                        Visibility: productSheet[j][header.indexOf("Visibility")] ? productSheet[j][header.indexOf("Visibility")] : 0,
                     })
                 }
             }
@@ -231,13 +231,15 @@ async function getSheetData() {
             tempProduct.Visibility = Visibility;
             tempProduct.variations = variations;
 
+            tempProduct.array = productSheet[i];
+
             tempProductCodes.push(productSheet[i][header.indexOf("Product Code")])
             products.push(tempProduct);
         }
 
     }
 
-    return { products }
+    return { products, pHeader: header }
 
 }
 
