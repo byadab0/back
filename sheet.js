@@ -199,27 +199,29 @@ async function getSheetData() {
             for (let j = 2; j < productSheet.length; j++) {
                 if (productSheet[i][header.indexOf("Product Code")] === productSheet[j][header.indexOf("Product Code")]) {
 
-                    Size.push(parseInt(productSheet[j][header.indexOf("Size")] ? productSheet[j][header.indexOf("Size")] : 0))
-                    Height.push(parseInt(productSheet[j][header.indexOf("Height")] ? productSheet[j][header.indexOf("Height")] : 0))
-                    GSM.push(parseInt(productSheet[j][header.indexOf("GSM")] ? productSheet[j][header.indexOf("GSM")] : 0))
-                    Price.push(parseInt(productSheet[j][header.indexOf("Price")] ? productSheet[j][header.indexOf("Price")] : 0))
-                    Final_Price.push(parseInt(productSheet[j][header.indexOf("Final Price")] ? productSheet[j][header.indexOf("Final Price")] : 0))
+                    productSheet[j][header.indexOf("Size")] && Size.push(productSheet[j][header.indexOf("Size")])
+                    productSheet[j][header.indexOf("Height")] && Height.push(parseInt(productSheet[j][header.indexOf("Height")]))
+                    productSheet[j][header.indexOf("GSM")] && GSM.push(parseInt(productSheet[j][header.indexOf("GSM")]))
+                    productSheet[j][header.indexOf("Price")] && Price.push(parseInt(productSheet[j][header.indexOf("Price")]))
+                    productSheet[j][header.indexOf("Final Price")] && Final_Price.push(parseInt(productSheet[j][header.indexOf("Final Price")]))
                     Stock.push(parseInt(productSheet[j][header.indexOf("Stock")] ? productSheet[j][header.indexOf("Stock")] : 0))
                     Pre_Order_Stock.push(parseInt(productSheet[j][header.indexOf("Pre Order Stock")] ? productSheet[j][header.indexOf("Pre Order Stock")] : 0))
-                    Visibility.push(productSheet[j][header.indexOf("Visibility")] ? productSheet[j][header.indexOf("Visibility")] : 0)
+                    Visibility.push(productSheet[j][header.indexOf("Visibility")] ? productSheet[j][header.indexOf("Visibility")] : "No")
 
                     variations.push({
-                        Size: parseInt(productSheet[j][header.indexOf("Size")] ? productSheet[j][header.indexOf("Size")] : 0),
-                        Height: parseInt(productSheet[j][header.indexOf("Height")] ? productSheet[j][header.indexOf("Height")] : 0),
-                        GSM: parseInt(productSheet[j][header.indexOf("GSM")] ? productSheet[j][header.indexOf("GSM")] : 0),
-                        Price: parseInt(productSheet[j][header.indexOf("Price")] ? productSheet[j][header.indexOf("Price")] : 0),
-                        Final_Price: parseInt(productSheet[j][header.indexOf("Final Price")] ? productSheet[j][header.indexOf("Final Price")] : 0),
+                        Size: productSheet[j][header.indexOf("Size")] && (productSheet[j][header.indexOf("Size")]),
+                        Height: productSheet[j][header.indexOf("Height")] && parseInt(productSheet[j][header.indexOf("Height")]),
+                        GSM: productSheet[j][header.indexOf("GSM")] && parseInt(productSheet[j][header.indexOf("GSM")]),
+                        Price: productSheet[j][header.indexOf("Price")] && parseInt(productSheet[j][header.indexOf("Price")]),
+                        Final_Price: productSheet[j][header.indexOf("Final Price")] && parseInt(productSheet[j][header.indexOf("Final Price")]),
                         Stock: parseInt(productSheet[j][header.indexOf("Stock")] ? productSheet[j][header.indexOf("Stock")] : 0),
                         Pre_Order_Stock: parseInt(productSheet[j][header.indexOf("Pre Order Stock")] ? productSheet[j][header.indexOf("Pre Order Stock")] : 0),
-                        Visibility: productSheet[j][header.indexOf("Visibility")] ? productSheet[j][header.indexOf("Visibility")] : 0,
+                        Visibility: productSheet[j][header.indexOf("Visibility")] ? productSheet[j][header.indexOf("Visibility")] : "No",
                     })
                 }
             }
+
+            console.log(Size)
 
             tempProduct.Size = Size;
             tempProduct.Height = Height;

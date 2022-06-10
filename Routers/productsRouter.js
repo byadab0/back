@@ -15,6 +15,19 @@ router.get('/search', async function (req, res) {
 })
 
 
+router.get('/deatils/:productcode', async function (req, res) {
+    const data = req.sheet;
+    const reqProductcode = req.params.productcode;
+    const product = data.products.find(x => x.Product_Code === reqProductcode);
+    const matchedProducts = data.products.filter((x) => {
+        if (x.Country === product.Country && x.Our_Brands === product.Our_Brands && x.Group_Products === product.Group_Products && x.Category === product.Category && x.Sub_Category === product.Sub_Category && x.Product_Type !== product.Product_Type)
+            return x;
+    })
+
+    res.send({ product: product, matchedProducts, similarProducts: data.products })
+})
+
+
 router.post('/addProduct', async function (req, res) {
 
     let reqData = req.body.headers;
@@ -29,18 +42,6 @@ router.post('/addProduct', async function (req, res) {
 
         if (oldIndex !== -1 || newIndex !== -1) {
             index = newIndex !== -1 ? newIndex : oldIndex;
-
-            // if (reqData[i].headerType === "Image") {
-            //     for (let j = 0; j < reqData[i].image.length; j++) {
-            //         if (reqData[i].image[j].imgLink) {
-            //             let link = await UploadFile(reqData[i].image[j].imgLink, reqData[i].image[j].name)
-            //             if (link.success) {
-            //                 reqData[i].image[j].imgLink = "";
-            //                 text += reqData[i].image[j].colour_code + "=" + link.success + "\n";
-            //             }
-            //         }
-            //     }
-            // }
 
             header[index] = reqData[i].headerName.new;
             headerValue[index] = reqData[i].headerType === "Image" ? text.substring(0, text.length - 1) : reqData[i].headerValue.length > 1 ? JSON.stringify(reqData[i].headerValue) : reqData[i].headerValue[0].value;
@@ -146,33 +147,6 @@ router.post('/addProduct', async function (req, res) {
 
             }
     }
-
-
-    // for (let i = 0; i < PriceData.length; i++) {
-    //     let temp = headerValue;
-    //     temp[0] = dateAndTime().replace(" GMT", "")
-    //     temp[productSheet[0].indexOf("Size")] = PriceData[i][0]
-    //     if (PriceData[i][1]) temp[productSheet[0].indexOf("Height")] = PriceData[i][1]
-    //     if (PriceData[i][2]) temp[productSheet[0].indexOf("GSM")] = PriceData[i][2]
-    //     temp[productSheet[0].indexOf("Price")] = PriceData[i][3];
-    //     temp[productSheet[0].indexOf("What is in the box ?")] = PriceData[i][4];
-    //     temp[productSheet[0].indexOf("SKU Code")] = PriceData[i][5];
-    //     temp[productSheet[0].indexOf("Packed Product Weight")] = PriceData[i][6];
-    //     temp[productSheet[0].indexOf("Packed Product Length")] = PriceData[i][7];
-    //     temp[productSheet[0].indexOf("Packed Product Width")] = PriceData[i][8];
-    //     temp[productSheet[0].indexOf("Packed Product Height")] = PriceData[i][9];
-
-
-    //     let price = parseInt(temp[productSheet[0].indexOf("Price")]),
-    //         taxPrice = parseFloat(temp[productSheet[0].indexOf("Tax %")]) * parseInt(temp[productSheet[0].indexOf("Price")]) / 100,
-    //         ShippingPrice = parseInt(temp[productSheet[0].indexOf("Shipping Charges")]),
-    //         CustomDuty = parseFloat(temp[productSheet[0].indexOf("Custom Duty %")]) * parseInt(temp[productSheet[0].indexOf("Price")]) / 100;
-
-    //     //console.log(productSheet[0].indexOf("Final Price"))
-    //     temp[productSheet[0].indexOf("Final Price")] = price + taxPrice + ShippingPrice + CustomDuty;
-
-    //     // await sheetAppend(spreadsheetId, `Product Sheet!A${productSheet.length + 1}`, temp);
-    // }
 
     res.send({ success: "Product added successfully!!" });
 });
