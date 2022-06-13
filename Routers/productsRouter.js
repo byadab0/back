@@ -94,10 +94,10 @@ router.post('/addProduct', async function (req, res) {
 
     let PriceData = req.body.PriceData, imagesWithSize = req.body.imagesWithSize;
 
-
+    let temp_2 = [];
     for (let i = 0; i < imagesWithSize.length; i++) {
-        console.log(imagesWithSize[i].height)
-        let temp = headerValue;
+
+        let temp = headerValue.slice();
         temp[0] = dateAndTime().replace(" GMT", "")
         temp[productSheet[0].indexOf("Size")] = imagesWithSize[i].size
         if (imagesWithSize[i].height) temp[productSheet[0].indexOf("Height")] = imagesWithSize[i].height
@@ -116,7 +116,7 @@ router.post('/addProduct', async function (req, res) {
             ShippingPrice = parseInt(temp[productSheet[0].indexOf("Shipping Charges")]),
             CustomDuty = parseFloat(temp[productSheet[0].indexOf("Custom Duty %")]) * parseInt(temp[productSheet[0].indexOf("Price")]) / 100;
 
-        // //console.log(productSheet[0].indexOf("Final Price"))
+
         temp[productSheet[0].indexOf("Final Price")] = price + taxPrice + ShippingPrice + CustomDuty;
 
 
@@ -127,26 +127,51 @@ router.post('/addProduct', async function (req, res) {
                 let temp_colour_code = imagesWithSize[i].images[k].colour_code, text = "";
                 temp_Images.push(imagesWithSize[i].images[k].colour_code);
 
+
+                let temp_Images_2 = temp.slice();
+
                 for (let j = 0; j < imagesWithSize[i].images.length; j++) {
                     if (imagesWithSize[i].images[j].imgLink && temp_colour_code === imagesWithSize[i].images[j].colour_code) {
-                        temp[productSheet[0].indexOf("SKU Code")] = imagesWithSize[i].images[j].sku_code;
-                        let link = await UploadFile(imagesWithSize[i].images[j].imgLink, imagesWithSize[i].images[j].name)
-                        if (link.success) {
-                            imagesWithSize[i].images[j].imgLink = "";
-                            text += imagesWithSize[i].images[j].colour_code + "=" + link.success + "\n";
+                        temp_Images_2[productSheet[0].indexOf("SKU Code")] = imagesWithSize[i].images[j].sku_code;
+
+                        const findImage = imagesWithSize[i].images.find(x => x.imgLink === imagesWithSize[i].images[j].imgLink);
+                        if (findImage) {
+                            const link = temp_2.find(x => x[productSheet[0].indexOf("Images")].includes(findImage.colour_code));
+                            if (link)
+                                text = link[productSheet[0].indexOf("Images")] + "\n";
+                            else {
+                                let link = await UploadFile(imagesWithSize[i].images[j].imgLink, imagesWithSize[i].images[j].name);
+
+                                if (link.success) {
+                                    text += imagesWithSize[i].images[j].colour_code + "=" + link.success + "\n";
+                                }
+                            }
+                        } else {
+
+                            let link = await UploadFile(imagesWithSize[i].images[j].imgLink, imagesWithSize[i].images[j].name);
+
+                            if (link.success) {
+                                text += imagesWithSize[i].images[j].colour_code + "=" + link.success + "\n";
+                            }
                         }
                     }
                 }
 
-                temp[productSheet[0].indexOf("Images")] = text.substring(0, text.length - 1)
+                temp_Images_2[productSheet[0].indexOf("Images")] = text.substring(0, text.length - 1)
                 // if (text !== "") {
                 //console.log(imagesWithSize[i].images)
-                await sheetAppend(spreadsheetId, `Product Sheet!A${productSheet.length + 1}`, temp);
+                // await sheetAppend(spreadsheetId, `Product Sheet!A${productSheet.length + 1}`, temp);
 
                 // }
+                temp_2.push(temp_Images_2)
 
             }
+
+        // temp_2.push(temp)
+
     }
+    console.log(temp_2)
+    await sheetAppendMany(spreadsheetId, `Product Sheet!A${productSheet.length + 1}`, temp_2)
 
     res.send({ success: "Product added successfully!!" });
 });
