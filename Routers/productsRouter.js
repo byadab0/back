@@ -5,12 +5,28 @@ const { dateAndTime, timeStamp } = require("../CommonFunctions.js")
 
 const spreadsheetId = '113MbGAb1k8wGeSWw_jF5Bam9MOMhslYIQabOJLetIKo';
 
+router.get("/homepage", async function (req, res) {
+    const data = req.HomePageData;
+    res.send(data)
+})
+
+router.get("/all-collections", async function (req, res) {
+    res.send({ products: req.allCollectionsData })
+})
+
+router.get("/particular-collection/:collectionName", async function (req, res) {
+    const collectionName = req.params.collectionName;
+
+    console.log(req.particularCollectionData.products)
+    const products = req.particularCollectionData.Products.find(x => x.collectionName === collectionName)
+
+    res.send({ products: products.collectionProducts })
+})
+
 
 router.get('/search', async function (req, res) {
 
     let searchValue = req.query.search;
-    //console.log(searchValue)
-    //console.log(req.sheet)
     res.send({ products: req.sheet })
 })
 
@@ -18,7 +34,9 @@ router.get('/search', async function (req, res) {
 router.get('/deatils/:productcode', async function (req, res) {
     const data = req.sheet;
     const reqProductcode = req.params.productcode;
+    console.log(reqProductcode)
     const product = data.products.find(x => x.Product_Code === reqProductcode);
+    console.log(product)
     const matchedProducts = data.products.filter((x) => {
         if (x.Country === product.Country && x.Our_Brands === product.Our_Brands && x.Group_Products === product.Group_Products && x.Category === product.Category && x.Sub_Category === product.Sub_Category && x.Product_Type !== product.Product_Type)
             return x;
@@ -129,10 +147,10 @@ router.post('/addProduct', async function (req, res) {
 
 
                 let temp_Images_2 = temp.slice();
+                temp_Images_2[productSheet[0].indexOf("SKU Code")] = imagesWithSize[i].images[k].sku_code;
 
                 for (let j = 0; j < imagesWithSize[i].images.length; j++) {
                     if (imagesWithSize[i].images[j].imgLink && temp_colour_code === imagesWithSize[i].images[j].colour_code) {
-                        temp_Images_2[productSheet[0].indexOf("SKU Code")] = imagesWithSize[i].images[j].sku_code;
 
                         const findImage = imagesWithSize[i].images.find(x => x.imgLink === imagesWithSize[i].images[j].imgLink);
                         if (findImage) {

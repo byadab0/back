@@ -1,24 +1,30 @@
 "use strict";
 const express = require("express");
+const { homePageDataBuilder, allCollectionsDataBuilder, particularCollectionsDataBuilder } = require("./CommonFunctions.js");
 const productsRouter = require("./Routers/productsRouter.js");
 const { getSheetData } = require("./sheet.js");
 
-const spreadsheetId = '113MbGAb1k8wGeSWw_jF5Bam9MOMhslYIQabOJLetIKo';
 
 const app = express();
-let sheet = {};
+let sheet = {}, HomePageData = {}, allCollectionsData = {}, particularCollectionData = [];
 
 async function getSheet() {
     sheet = await getSheetData();
+    HomePageData = await homePageDataBuilder(sheet.products);
+    allCollectionsData = await allCollectionsDataBuilder(sheet.products);
+    particularCollectionData = await particularCollectionsDataBuilder(sheet.products)
 }
 getSheet();
 
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 app.use(async function getData(req, res, next) {
     req.sheet = sheet;
+    req.HomePageData = HomePageData;
+    req.allCollectionsData = allCollectionsData;
+    req.particularCollectionData = particularCollectionData;
     next();
 })
 

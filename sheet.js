@@ -142,9 +142,14 @@ module.exports.UploadFile = UploadFile
 
 
 async function getSheetData() {
+    console.log("Started")
+
     await authenticate();
     let productSheet = await sheetGet(spreadsheetId, "Product Sheet");
-    // sheet.productSheet = await sheetGet(spreadsheetId, "Product Sheet");
+
+    let data = await sheetGet(spreadsheetId, "Home Page Data Entry");
+    let data_entry_header = data[0];
+    data = data.slice(1, data.length);
 
     let header = productSheet[0], products = [], tempProductCodes = [];
 
@@ -176,28 +181,36 @@ async function getSheetData() {
                 Packed_Product_Weight: productSheet[i][header.indexOf("Packed Product Weight")],
                 Packed_Product_Length: productSheet[i][header.indexOf("Packed Product Length")],
                 Packed_Product_Width: productSheet[i][header.indexOf("Packed Product Width")],
-                Packed_Product_Height: productSheet[i][header.indexOf("Packed Product Height")]
+                Packed_Product_Height: productSheet[i][header.indexOf("Packed Product Height")],
+                Best_Sellers: productSheet[i][header.indexOf("Best Sellers")]
             }
 
+            const Collection_Text = data.find(x => productSheet[i][header.indexOf("Our Brands")] === x[data_entry_header.indexOf("Our Brands")]);
 
-            let tempImages = productSheet[i][header.indexOf("Images")].split("\n"), Images = [];
-
-            for (let j = 0; j < tempImages.length; j++)
-                if (tempImages[j]) {
-                    let temp = tempImages[j].replace(/ /gi, "").split("=http")
-                    Images.push({
-                        colour: temp[0],
-                        link: "http" + temp[1]
-                    })
-                }
-
-            tempProduct.Images = Images;
+            if (Collection_Text) {
+                tempProduct.Coloured_Text = Collection_Text[data_entry_header.indexOf("Coloured Text")];
+                tempProduct.Uncoloured_Text = Collection_Text[data_entry_header.indexOf("Uncoloured Text")];
+            }
 
             let variations = [], Size = [], Height = [], GSM = [], Price = [],
                 Final_Price = [], Stock = [], Pre_Order_Stock = [], Visibility = [];
 
             for (let j = 2; j < productSheet.length; j++) {
                 if (productSheet[i][header.indexOf("Product Code")] === productSheet[j][header.indexOf("Product Code")]) {
+
+                    let tempImages = productSheet[j][header.indexOf("Images")] ? productSheet[j][header.indexOf("Images")].split("\n") : [], Images = [];
+
+                    for (let k = 0; k < tempImages.length; k++)
+                        if (tempImages[k]) {
+                            let temp = tempImages[k].replace(/ /gi, "").split("=http")
+                            Images.push({
+                                sku_code: productSheet[j][header.indexOf("SKU Code")],
+                                colour: temp[0],
+                                link: "http" + temp[1]
+                            })
+                        }
+
+                    // tempProduct.Images = Images;
 
                     productSheet[j][header.indexOf("Size")] && Size.push(productSheet[j][header.indexOf("Size")])
                     productSheet[j][header.indexOf("Height")] && Height.push(parseInt(productSheet[j][header.indexOf("Height")]))
@@ -217,11 +230,10 @@ async function getSheetData() {
                         Stock: parseInt(productSheet[j][header.indexOf("Stock")] ? productSheet[j][header.indexOf("Stock")] : 0),
                         Pre_Order_Stock: parseInt(productSheet[j][header.indexOf("Pre Order Stock")] ? productSheet[j][header.indexOf("Pre Order Stock")] : 0),
                         Visibility: productSheet[j][header.indexOf("Visibility")] ? productSheet[j][header.indexOf("Visibility")] : "No",
+                        Images: Images
                     })
                 }
             }
-
-            console.log(Size)
 
             tempProduct.Size = Size;
             tempProduct.Height = Height;
@@ -240,6 +252,9 @@ async function getSheetData() {
         }
 
     }
+
+
+    console.log(products.length)
 
     return { products, pHeader: header }
 
